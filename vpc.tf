@@ -20,8 +20,8 @@ resource "aws_subnet" "public_subnet" {
 
   tags = merge(
     {
-      Name                        = "${var.project}_${var.environment}_public_subnet_${count.index + 1}"
-      "kubernetes.io/role/elb"    = "1"          # Important for EKS ALB
+      Name                     = "${var.project}_${var.environment}_public_subnet_${count.index + 1}"
+      "kubernetes.io/role/elb" = "1" # Important for EKS ALB
     },
     var.common_tags
   )
@@ -37,7 +37,7 @@ resource "aws_subnet" "private_subnet" {
   tags = merge(
     {
       Name                              = "${var.project}_${var.environment}_private_subnet_${count.index + 1}"
-      "kubernetes.io/role/internal-elb" = "1"    # Important for EKS internal ALB
+      "kubernetes.io/role/internal-elb" = "1" # Important for EKS internal ALB
     },
     var.common_tags
   )

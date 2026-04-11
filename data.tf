@@ -1,5 +1,5 @@
 data "aws_availability_zones" "available_zone" {
-    state = "available"
+  state = "available"
 }
 data "aws_iam_policy_document" "assume_role_node" {
   statement {
