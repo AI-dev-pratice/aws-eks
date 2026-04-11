@@ -8,6 +8,7 @@ on:
         required: true
         type: choice
         options:
+          - plan     # New option - just run plan
           - deploy
           - destroy
 
@@ -20,9 +21,35 @@ env:
   TF_WORKING_DIR: ./
 
 jobs:
-  pre:
+  setup:
     runs-on: ubuntu-latest
-    if: github.event.inputs.action == 'deploy'
+    outputs:
+      should_run: ${{ steps.check.outputs.should_run }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_IAM_ROLE }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.8
+
+      - name: Terraform Init
+        run: terraform init -input=false
+        working-directory: ${{ env.TF_WORKING_DIR }}
+
+      - name: Check action type
+        id: check
+        run: echo "should_run=true" >> $GITHUB_OUTPUT
+
+  fmt:
+    runs-on: ubuntu-latest
+    needs: setup
     steps:
       - uses: actions/checkout@v4
       - uses: aws-actions/configure-aws-credentials@v4
@@ -32,15 +59,13 @@ jobs:
       - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.9.8
-      - run: terraform fmt -check
-        working-directory: ${{ env.TF_WORKING_DIR }}
-      - run: terraform init -input=false
+      - run: terraform fmt -check -recursive
         working-directory: ${{ env.TF_WORKING_DIR }}
 
   validate:
     runs-on: ubuntu-latest
-    needs: pre
-    if: github.event.inputs.action == 'deploy'
+    needs: [setup, fmt]
+    if: github.event.inputs.action != 'destroy'
     steps:
       - uses: actions/checkout@v4
       - uses: aws-actions/configure-aws-credentials@v4
@@ -55,10 +80,10 @@ jobs:
       - run: terraform validate
         working-directory: ${{ env.TF_WORKING_DIR }}
 
-  build:
+  plan:
     runs-on: ubuntu-latest
-    needs: validate
-    if: github.event.inputs.action == 'deploy'
+    needs: [setup, validate]
+    if: github.event.inputs.action == 'plan' || github.event.inputs.action == 'deploy'
     steps:
       - uses: actions/checkout@v4
       - uses: aws-actions/configure-aws-credentials@v4
@@ -68,19 +93,33 @@ jobs:
       - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.9.8
-      - run: terraform init -input=false
+
+      - name: Terraform Init
+        run: terraform init -input=false
         working-directory: ${{ env.TF_WORKING_DIR }}
-      - run: terraform plan -input=false -out=tfplan
+
+      - name: Terraform Plan
+        id: plan
+        run: |
+          terraform plan -input=false -out=tfplan
+          echo "plan_summary=$(terraform show -no-color tfplan | head -n 50)" >> $GITHUB_OUTPUT
         working-directory: ${{ env.TF_WORKING_DIR }}
-      - uses: actions/upload-artifact@v4
+
+      - name: Upload Plan Artifact
+        uses: actions/upload-artifact@v4
         with:
           name: tfplan
           path: ${{ env.TF_WORKING_DIR }}/tfplan
 
+      - name: Show Plan Summary
+        run: echo "${{ steps.plan.outputs.plan_summary }}"
+        if: always()
+
   deploy:
     runs-on: ubuntu-latest
-    needs: build
+    needs: plan
     if: github.event.inputs.action == 'deploy'
+    environment: production   # Optional: Add manual approval
     steps:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4

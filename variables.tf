@@ -64,3 +64,42 @@ variable "private_subnet_cidrs" {
   default     = ["10.0.96.0/19", "10.0.128.0/19", "10.0.160.0/19"]
 
 }
+
+#worker role policy
+variable "worker_role_policies_arn" {
+  description = "IAM policy for EKS worker nodes"
+  type        = list(string)
+  default     = [
+    "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy",
+    "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy",
+    "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly",
+    "arn:aws:iam::aws:policy/EBSCSI_Driver_Policy"
+  ]
+}
+
+variable "node_group_desired_size" {
+  description = "Desired number of worker nodes in the EKS node group"
+  type        = number
+  default     = 2
+  
+}
+
+variable "node_group_max_size" {
+  description = "Maximum number of worker nodes in the EKS node group"
+  type        = number
+  default     = 3
+  
+}
+
+variable "node_group_min_size" {
+  description = "Minimum number of worker nodes in the EKS node group"
+  type        = number
+  default     = 1
+  
+}
+
+variable "node_group_instance_type" {
+  type = string
+  default = "t3.small"
+  
+}
