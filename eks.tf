@@ -3,7 +3,7 @@ resource "aws_eks_cluster" "eks-cluster" {
   role_arn = aws_iam_role.eks_cluster_role.arn
   version = "1.33"
   vpc_config {
-    subnet_ids = flatten([aws_subnet.public_subnet[*].id], [aws_subnet.private_subnet[*].id]])
+    subnet_ids = flatten([aws_subnet.public_subnet[*].id], [aws_subnet.private_subnet[*].id])
   }
 
   tags = merge(
