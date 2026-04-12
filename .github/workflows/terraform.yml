@@ -43,7 +43,7 @@ jobs:
           terraform_version: 1.9.8
 
       - name: Terraform Init
-        run: terraform init -input=false
+        run: terraform init -input=false -reconfigure
         working-directory: ${{ env.TF_WORKING_DIR }}
 
       - name: Check action type
@@ -68,7 +68,7 @@ jobs:
           terraform_version: 1.9.8
 
       - name: Terraform Init
-        run: terraform init -input=false
+        run: terraform init -input=false -reconfigure
         working-directory: ${{ env.TF_WORKING_DIR }}
 
       - name: Terraform Format Check
@@ -94,7 +94,7 @@ jobs:
           terraform_version: 1.9.8
 
       - name: Terraform Init
-        run: terraform init -input=false
+        run: terraform init -input=false -reconfigure
         working-directory: ${{ env.TF_WORKING_DIR }}
 
       - name: Terraform Validate
@@ -120,7 +120,7 @@ jobs:
           terraform_version: 1.9.8
 
       - name: Terraform Init
-        run: terraform init -input=false
+        run: terraform init -input=false -reconfigure
         working-directory: ${{ env.TF_WORKING_DIR }}
 
       - name: Terraform Plan
@@ -168,7 +168,7 @@ jobs:
           terraform_version: 1.9.8
 
       - name: Terraform Init
-        run: terraform init -input=false
+        run: terraform init -input=false -reconfigure
         working-directory: ${{ env.TF_WORKING_DIR }}
 
       - name: Terraform Apply
@@ -195,7 +195,7 @@ jobs:
           terraform_version: 1.9.8
 
       - name: Terraform Init
-        run: terraform init -input=false
+        run: terraform init -input=false -reconfigure
         working-directory: ${{ env.TF_WORKING_DIR }}
 
       - name: Terraform Destroy
