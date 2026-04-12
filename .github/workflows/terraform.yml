@@ -8,7 +8,7 @@ on:
         required: true
         type: choice
         options:
-          - plan     # New option - just run plan
+          - plan     # just run plan
           - deploy
           - destroy
 
