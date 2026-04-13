@@ -106,8 +106,8 @@ variable "node_group_instance_type" {
 }
 
 #flux github token
-variable "flux_github_token" {
-  description = "GitHub Personal Access Token for Flux to access the repository"
-  type        = string
-  sensitive   = true
-}
+# variable "flux_github_token" {
+#   description = "GitHub Personal Access Token for Flux to access the repository"
+#   type        = string
+#   sensitive   = true
+# }
