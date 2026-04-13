@@ -101,6 +101,6 @@ variable "node_group_min_size" {
 
 variable "node_group_instance_type" {
   type    = string
-  default = "t3.small"
+  default = "t2.micro"
 
 }
