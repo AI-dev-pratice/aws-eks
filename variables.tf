@@ -104,3 +104,10 @@ variable "node_group_instance_type" {
   default = "t2.micro"
 
 }
+
+#flux github token
+variable "flux_github_token" {
+  description = "GitHub Personal Access Token for Flux to access the repository"
+  type        = string
+  sensitive   = true
+}
