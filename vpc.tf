@@ -68,18 +68,17 @@ resource "aws_route_table" "public_rt" {
   )
 }
 
-# Private Route Tables (one per AZ)
+# Single Private Route Table (shared across all AZs)
 resource "aws_route_table" "private_rt" {
-  count  = length(var.private_subnet_cidrs)
   vpc_id = aws_vpc.main.id
 
   route {
     cidr_block     = "0.0.0.0/0"
-    nat_gateway_id = aws_nat_gateway.nat_gateway[count.index].id
+    nat_gateway_id = aws_nat_gateway.nat_gateway[0].id
   }
 
   tags = merge(
-    { Name = "${var.project}_${var.environment}_private_rt_${count.index + 1}" },
+    { Name = "${var.project}_${var.environment}_private_rt" },
     var.common_tags
   )
 }
@@ -91,34 +90,34 @@ resource "aws_route_table_association" "public" {
   route_table_id = aws_route_table.public_rt.id
 }
 
-# Elastic IPs for NAT
+# Elastic IP for NAT (single NAT Gateway for cost optimization)
 resource "aws_eip" "nat" {
-  count  = length(var.public_subnet_cidrs)
+  count  = 1
   domain = "vpc"
 
   tags = merge(
-    { Name = "${var.project}_${var.environment}_eip_${count.index + 1}" },
+    { Name = "${var.project}_${var.environment}_eip" },
     var.common_tags
   )
 }
 
-# NAT Gateways
+# NAT Gateway (single gateway in first AZ for cost optimization)
 resource "aws_nat_gateway" "nat_gateway" {
-  count         = length(var.public_subnet_cidrs)
-  allocation_id = aws_eip.nat[count.index].id
-  subnet_id     = aws_subnet.public_subnet[count.index].id
+  count         = 1
+  allocation_id = aws_eip.nat[0].id
+  subnet_id     = aws_subnet.public_subnet[0].id
 
   depends_on = [aws_internet_gateway.igw]
 
   tags = merge(
-    { Name = "${var.project}_${var.environment}_nat_${count.index + 1}" },
+    { Name = "${var.project}_${var.environment}_nat" },
     var.common_tags
   )
 }
 
-# Private Route Table Associations
+# Private Route Table Associations (all private subnets use the same route table)
 resource "aws_route_table_association" "private" {
   count          = length(var.private_subnet_cidrs)
   subnet_id      = aws_subnet.private_subnet[count.index].id
-  route_table_id = aws_route_table.private_rt[count.index].id
+  route_table_id = aws_route_table.private_rt.id
 }
